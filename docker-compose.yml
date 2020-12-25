@@ -1,0 +1,42 @@
+version: "3.8"
+
+# Volumes
+volumes:
+  mysql-absolut:
+    driver: local
+
+services:
+  # PHP
+  php-absolut:
+    build:
+      context: ./
+      dockerfile: docker/php/Dockerfile
+    container_name: php-absolut
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html/:cached
+      - ./docker/php/000-default.conf:/etc/apache2/sites-available/000-default.conf
+    ports:
+      - 80:80
+    networks:
+      - absolut-network
+
+  # MySQL
+  db-absolut:
+    image: mariadb:10.5.8
+    container_name: db-absolut
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql-absolut:/var/lib/mysql
+    expose:
+      - 3306
+    networks:
+      - absolut-network
+
+# Networks
+networks:
+  absolut-network:
+    driver: bridge
